@@ -1,0 +1,394 @@
+children: [
+          Container(
+            // height: 150,
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius:
+                  const BorderRadiusDirectional.all(Radius.circular(10)),
+              boxShadow: const [
+                BoxShadow(
+                    color: Colors.black87,
+                    blurRadius: 1,
+                    blurStyle: BlurStyle.outer)
+              ],
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(5),
+              child: Column(
+                children: [
+                  const Text(
+                    'Balance',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  Text(
+                    provider.numToCurrency(expense.balance),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.redAccent.withAlpha(80),
+                              child: const Icon(
+                                Icons.trending_down,
+                                size: 25,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 7),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    'Expensed',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    provider.numToCurrency(expense.spent),
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.green.withAlpha(80),
+                              child: const Icon(
+                                Icons.trending_up,
+                                size: 25,
+                                color: Colors.green,
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 7),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    'Income',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    provider.numToCurrency(expense.income),
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.blue.withAlpha(80),
+                              child: const Icon(
+                                Icons.credit_card,
+                                size: 25,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 7),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    'Credit Usage',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                  provider.numToCurrency(expense.creditCardUsage),
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          )
+        ],
+
+
+
+
+        ////////////////
+
+        Add Modal
+
+
+        import 'package:Budgetary/shared/models/selected_expense.dart';
+import 'package:flutter/material.dart';
+
+import '../models/expense_Item.dart';
+
+class AddExpenseModal extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _AddExpenseModalState();
+  final isEditMode;
+  final selectedExpense;
+  final bool isIncome;
+
+  AddExpenseModal({
+    this.selectedExpense = const {},
+    this.isEditMode = false,
+    this.isIncome = false,
+  });
+}
+
+class _AddExpenseModalState extends State<AddExpenseModal> {
+  final _nameController = TextEditingController();
+  final _amountController = TextEditingController();
+  String _paymentMode = 'CASH';
+
+  @override
+  void initState() {
+    if (widget.isEditMode) {
+      _nameController.text = widget.selectedExpense.expense.name;
+      _amountController.text = '${widget.selectedExpense.expense.amount}';
+      _paymentMode = widget.selectedExpense.expense.paymentMode;
+    }
+    super.initState();
+  }
+
+  void _onAdd(ctx) {
+    var exp = ExpenseItem(
+      name: _nameController.text,
+      amount: int.parse(_amountController.text),
+      date: DateTime.now(),
+      isIncome: widget.isIncome,
+      paymentMode: _paymentMode,
+    );
+
+    Navigator.pop(ctx, exp);
+  }
+
+  void _onPaymentModeSelect(value) {
+    if (value != null) setState(() => _paymentMode = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var mediaQuery = MediaQuery.of(context);
+    return AlertDialog(
+      title: Text(widget.isIncome ? "Add Income" : 'Add Expense'),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: mediaQuery.size.height * 0.3,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                label: const Text('Name'),
+                filled: true,
+                fillColor: Theme.of(context).primaryColor.withAlpha(30),
+              ),
+            ),
+            TextField(
+              controller: _amountController,
+              decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                label: const Text('Amount'),
+                filled: true,
+                fillColor: Theme.of(context).primaryColor.withAlpha(30),
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(top: 10),
+              child: const Text(
+                'Payment Mode',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            DropdownButton(
+              isExpanded: true,
+              onChanged: (val) => _onPaymentModeSelect(val),
+              value: _paymentMode,
+              items: const [
+                DropdownMenuItem(
+                  value: 'CASH',
+                  child: Text('Cash'),
+                ),
+                DropdownMenuItem(
+                  value: 'CREDIT_CARD',
+                  child: Text('Credit Card'),
+                ),
+                DropdownMenuItem(
+                  value: 'BANK',
+                  child: Text('Bank'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Cancel')),
+        ElevatedButton(
+          onPressed: () => _onAdd(context),
+          child: Text(widget.isEditMode ? 'Update' : 'Add'),
+        ),
+      ],
+    );
+  }
+}
+
+
+//////////////////////////
+///
+///
+///
+///
+/// return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Card(
+                surfaceTintColor: Colors.green,
+                elevation: 2,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  width: 150,
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Income",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.green,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      Text(
+                        provider.numToCurrency(expense.income),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.green.shade400,
+                          letterSpacing: 1,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              Card(
+                surfaceTintColor: Colors.red,
+                elevation: 2,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  width: 150,
+                  child: Column(
+                    children: [
+                      Text(
+                        "Expenses",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.red.withAlpha(200),
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      Text(
+                        provider.numToCurrency(expense.spent),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.red.shade400,
+                          letterSpacing: 1,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Card(
+                surfaceTintColor: Colors.red,
+                elevation: 2,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  width: 150,
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Credit Usage",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.red,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      Text(
+                        provider.numToCurrency(expense.creditCardUsage),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.red.shade400,
+                          letterSpacing: 1,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              Card(
+                surfaceTintColor: Colors.green,
+                elevation: 2,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  width: 150,
+                  child: Column(
+                    children: [
+                      Text(
+                        "Balance",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.green.withAlpha(200),
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      Text(
+                        provider.numToCurrency(expense.balance),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.green.shade400,
+                          letterSpacing: 1,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
