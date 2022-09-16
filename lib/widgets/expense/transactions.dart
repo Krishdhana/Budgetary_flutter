@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../shared/providers/txList_provider.dart';
-import '../home/TxBottomSheet.dart';
 import 'txItemRenderer.dart';
 
 class Transactions extends StatefulWidget {
@@ -15,64 +14,85 @@ class Transactions extends StatefulWidget {
 class _TransactionsState extends State<Transactions> {
   late selectedTransaction selectedTx;
 
-  void onTxTap(ctx, idx) {
-    showModalBottomSheet(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(28),
-          topRight: Radius.circular(28),
-        ),
-      ),
-      context: ctx,
-      builder: ((_) {
-        selectedTx = selectedTransaction(
-            txItem: context
-                .read<TxListProvider>()
-                .getRecentTransactions
-                .txList[idx],
-            index: idx);
-        return TxBottomSheet(
-          selectedTx: selectedTx,
-        );
-      }),
-    ).then((val) {
-      _initAction(ctx, val);
-    });
+  void onTxItemTap(idx, action) {
+    selectedTx = selectedTransaction(
+      txItem: context.read<TxListProvider>().getRecentTransactions.txList[idx],
+      index: idx,
+    );
+
+    _performAction(action);
   }
 
-  void _initAction(ctx, opt) {
+  void _performAction(opt) {
     switch (opt) {
-      case 1:
-        viewExpense(ctx);
+      case 'DETAILS':
+        _viewTx();
         break;
-      case 2:
-        _updateExpDialog(ctx);
+      case 'EDIT':
+        _editTx();
         break;
-      case 3:
-        context.read<TxListProvider>().deleteTransaction(selectedTx);
+      case 'DELETE':
+        _deleteTx();
+        break;
     }
   }
 
-  void viewExpense(ctx) {
-    showDialog(context: ctx, builder: (_) => ViewTransaction(selectedTx));
+  void _viewTx() {
+    showDialog(context: context, builder: (_) => ViewTransaction(selectedTx));
   }
 
-  void _updateExpDialog(ctx) {
-    Navigator.of(ctx).pushNamed('/addNewExpenseScreen',
+  void _editTx() {
+    Navigator.of(context).pushNamed('/addNewExpenseScreen',
         arguments: {"isEditMode": true, "selectedTx": selectedTx});
+  }
+
+  void _deleteTx() {
+    showDialog(
+        context: context,
+        builder: ((ctx) => AlertDialog(
+              title: Row(
+                children: [
+                  const Text('Delete'),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      selectedTx.txItem.name,
+                      style: TextStyle(color: Theme.of(context).primaryColor),
+                    ),
+                  )
+                ],
+              ),
+              content:
+                  const Text('Are you sure want to delete this Transaction'),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text('Cancel')),
+                ElevatedButton(
+                    onPressed: () {
+                      context
+                          .read<TxListProvider>()
+                          .deleteTransaction(selectedTx);
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text('Delete')),
+              ],
+            )));
   }
 
   @override
   Widget build(BuildContext context) {
     final recentTxns =
         Provider.of<TxListProvider>(context).getRecentTransactions;
-    return recentTxns.txList.isNotEmpty
-        ? Expanded(
-            child: Column(
+    return Expanded(
+      child: recentTxns.txList.isNotEmpty
+          ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 10, top: 20),
                   child: const Text(
                     'Recent Transactions',
                     style: TextStyle(fontSize: 16),
@@ -82,25 +102,25 @@ class _TransactionsState extends State<Transactions> {
                   child: LayoutBuilder(
                     builder: (bCtx, constraints) {
                       return ListView.builder(
+                        clipBehavior: Clip.antiAlias,
                         // separatorBuilder: (context, index) => Divider(),
-                        itemCount: recentTxns.txList.length,
-                        itemBuilder: (context, idx) => Container(
-                          margin: const EdgeInsets.symmetric(vertical: 5),
-                          child: ExpenseItemRenderer(
-                            exp: recentTxns.txList[idx],
-                            index: idx,
-                            onClickItem: onTxTap,
-                          ),
+                        itemCount: recentTxns.txList.length > 10
+                            ? 10
+                            : recentTxns.txList.length,
+                        itemBuilder: (context, idx) => ExpenseItemRenderer(
+                          txItem: recentTxns.txList[idx],
+                          onClickItem: (String action) =>
+                              onTxItemTap(idx, action),
                         ),
                       );
                     },
                   ),
                 )
               ],
+            )
+          : const Center(
+              child: Text('No Expenses', style: TextStyle(fontSize: 18)),
             ),
-          )
-        : const Center(
-            child: Text('No Expenses'),
-          );
+    );
   }
 }

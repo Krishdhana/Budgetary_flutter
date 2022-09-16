@@ -1,8 +1,5 @@
-import 'package:Budgetary/shared/models/selected_Transaction.dart';
-import 'package:Budgetary/shared/models/transaction.dart';
 import 'package:Budgetary/shared/providers/txList_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../shared/models/transaction_item.dart';
@@ -39,19 +36,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     var exp = TransItem(
       name: _nameController.text,
       amount: int.parse(_amountController.text),
-      date: DateTime.now(),
+      date: widget.isEditMode ? widget.selectedTx.txItem.date : DateTime.now(),
       isIncome: _isIncome,
-      paymentMode: _isIncome ? 'Income' : _paymentMode,
+      paymentMode: _isIncome ? 'INCOME' : _paymentMode,
     );
 
     if (widget.isEditMode) {
-      // widget.selectedTx.txItem = TransItem();
-      var tx = TransItem(
-          name: 'name',
-          amount: 10,
-          isIncome: true,
-          date: DateTime.now(),
-          paymentMode: "paymentMode");
+      widget.selectedTx.txItem = exp;
+      // var tx = TransItem(
+      //     name: 'name',
+      //     amount: 10,
+      //     isIncome: true,
+      //     date: DateTime.now(),
+      //     paymentMode: "paymentMode");
       provider.updateTransaction(widget.selectedTx);
     } else {
       provider.onAddTransaction(exp);
