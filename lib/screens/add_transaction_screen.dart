@@ -43,12 +43,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     if (widget.isEditMode) {
       widget.selectedTx.txItem = exp;
-      // var tx = TransItem(
-      //     name: 'name',
-      //     amount: 10,
-      //     isIncome: true,
-      //     date: DateTime.now(),
-      //     paymentMode: "paymentMode");
       provider.updateTransaction(widget.selectedTx);
     } else {
       provider.onAddTransaction(exp);

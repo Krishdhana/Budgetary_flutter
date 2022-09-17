@@ -11,7 +11,8 @@ class OverviewBanner extends StatelessWidget {
     var txns =
         Provider.of<TxListProvider>(ctx, listen: false).getRecentTransactions;
 
-    double percent = txns.balance / txns.income;
+    double percent =
+        double.parse((txns.balance / txns.income).toStringAsFixed(2));
     if (percent > 0) {
       if (full) return percent * 100;
       return percent;

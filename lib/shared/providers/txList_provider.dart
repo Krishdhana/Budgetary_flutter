@@ -134,6 +134,7 @@ class TxListProvider with ChangeNotifier {
     await _prefs.then(
       (prefs) {
         prefs.remove(_key);
+        _updateState();
       },
     );
   }

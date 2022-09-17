@@ -1,3 +1,4 @@
+import 'package:Budgetary/shared/providers/app_settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -48,11 +49,19 @@ class BudgetaryState extends State<Budgetary> {
         appColorSeed = Colors.deepPurple.shade600;
 
       return MultiProvider(
-        providers: [ChangeNotifierProvider(create: (_) => TxListProvider())],
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) => TxListProvider(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => AppSettingsProvider(),
+          )
+        ],
         builder: ((context, child) => MaterialApp(
               theme: ThemeData(
                 useMaterial3: true,
-                colorSchemeSeed: appColorSeed,
+                colorSchemeSeed: context.watch<AppSettingsProvider>().appColor,
+                // brightness: Brightness.dark
                 // brightness: Brightness.dark,
               ),
               home: Scaffold(
