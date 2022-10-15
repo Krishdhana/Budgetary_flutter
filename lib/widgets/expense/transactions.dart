@@ -63,7 +63,7 @@ class _TransactionsState extends State<Transactions> {
                 ],
               ),
               content:
-                  const Text('Are you sure want to delete this Transaction'),
+                  const Text('Are you sure want to delete this Transaction ?'),
               actions: [
                 TextButton(
                     onPressed: () {

@@ -45,7 +45,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       widget.selectedTx.txItem = exp;
       provider.updateTransaction(widget.selectedTx);
     } else {
-      provider.onAddTransaction(exp);
+      provider.addTransaction(exp);
     }
     Navigator.pop(ctx);
   }
@@ -69,37 +69,45 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(vertical: 15),
-                  child: const Text(
-                    'Transaction Type',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                Wrap(
                   children: [
-                    ChoiceChip(
-                      label: const Text("Income"),
-                      selected: _isIncome,
-                      onSelected: (bool val) {
-                        setState(() {
-                          _isIncome = true;
-                        });
-                      },
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(vertical: 15),
+                      child: const Text(
+                        'Transaction Type',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
-                    ChoiceChip(
-                      label: const Text("Expense"),
-                      selected: !_isIncome,
-                      onSelected: (bool val) {
-                        setState(
-                          () {
-                            _isIncome = false;
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ChoiceChip(
+                          label: const Text("Income"),
+                          selected: _isIncome,
+                          onSelected: (bool val) {
+                            if (!_isIncome) {
+                              setState(() {
+                                _isIncome = true;
+                              });
+                            }
                           },
-                        );
-                      },
+                        ),
+                        ChoiceChip(
+                          label: const Text("Expense"),
+                          selected: !_isIncome,
+                          onSelected: (bool val) {
+                            if (_isIncome) {
+                              setState(
+                                () {
+                                  _isIncome = false;
+                                },
+                              );
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -186,9 +194,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     : Container(),
                 Container(
                   width: double.infinity,
+                  height: 130,
                   margin: const EdgeInsets.only(top: 15, bottom: 10),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       ElevatedButton(
                         onPressed: () {

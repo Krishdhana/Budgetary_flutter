@@ -5,7 +5,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 
 import 'shared/providers/txList_provider.dart';
 import 'screens/history_screen.dart';
-import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 import 'screens/home_screen.dart';
 import 'shared/widgets/BottomNavBar.dart';
 import 'screens/add_transaction_screen.dart';
@@ -27,7 +27,7 @@ class BudgetaryState extends State<Budgetary> {
   final List<Widget> _pages = [
     HomeScreen(),
     HistoryScreen(),
-    ProfileScreen(),
+    SettingsScreen(),
   ];
 
   int _activeRouteIndex = 0;
@@ -60,7 +60,10 @@ class BudgetaryState extends State<Budgetary> {
         builder: ((context, child) => MaterialApp(
               theme: ThemeData(
                 useMaterial3: true,
-                colorSchemeSeed: context.watch<AppSettingsProvider>().appColor,
+                colorSchemeSeed:
+                    context.watch<AppSettingsProvider>().useColorFromWallpaper
+                        ? appColorSeed
+                        : context.watch<AppSettingsProvider>().appColor,
                 // brightness: Brightness.dark
                 // brightness: Brightness.dark,
               ),

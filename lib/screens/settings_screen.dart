@@ -1,4 +1,6 @@
+import 'package:Budgetary/shared/models/app_settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 
@@ -8,19 +10,17 @@ import '../widgets/profile/profile_edit_dialog.dart';
 
 import '../shared/providers/txList_provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+class SettingsScreen extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => _ProfileScreenState();
+  State<StatefulWidget> createState() => _SettingsScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     Color color = Theme.of(context).primaryColor;
     late Color selectedColor;
-    UserDetails userData =
-        Provider.of<AppSettingsProvider>(context).getUserData();
-
-    var _pickedcolor;
+    var settingsProvider = Provider.of<AppSettingsProvider>(context);
+    UserDetails userDetails = settingsProvider.getUserData();
 
     void _showColorPicker() {
       showDialog(
@@ -43,10 +43,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ElevatedButton(
                 child: const Text('Choose'),
                 onPressed: () {
+                  settingsProvider.updateAppColor(selectedColor);
                   Navigator.pop(context);
-                  context
-                      .read<AppSettingsProvider>()
-                      .updateAppColor(selectedColor);
                 },
               ),
             ],
@@ -55,8 +53,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
+    void _clearData() {
+      showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+                title: const Text('Confirmation'),
+                content: const Text(
+                    'This will delete all the data and reset the app!'),
+                actions: [
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ElevatedButton(
+                    child: const Text('Sure'),
+                    onPressed: () {
+                      context.read<TxListProvider>().clearStorage();
+                      settingsProvider.clearAppSettings();
+                      SystemNavigator.pop();
+                    },
+                    // },
+                  ),
+                ],
+              ));
+    }
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      // margin: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -76,8 +101,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: color,
               ),
             ),
-            title: Text(userData.username),
-            subtitle: Text(userData.role),
+            title: Text(userDetails.username),
+            subtitle: Text(userDetails.role),
             trailing: IconButton(
               icon: Icon(
                 Icons.edit,
@@ -88,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     showDialog(
                       context: context,
                       builder: (context) =>
-                          ProfileEditDialog(userDetails: userData),
+                          ProfileEditDialog(userDetails: userDetails),
                     )
                   }),
             ),
@@ -108,11 +133,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: _showColorPicker,
             ),
           ),
+          CheckboxListTile(
+              title: const Text('Pick Color From Wallpaper'),
+              subtitle: const Text('Only works on Android 12 above'),
+              value: settingsProvider.useColorFromWallpaper,
+              onChanged: ((value) =>
+                  settingsProvider.useWallpaperColor(value))),
           TextButton(
-            onPressed: () {
-              context.read<TxListProvider>().clearStorage();
-              // SystemNavigator.pop();
-            },
+            onPressed: _clearData,
             child: const Text('Clear all data'),
           ),
         ],

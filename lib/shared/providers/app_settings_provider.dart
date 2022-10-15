@@ -1,19 +1,24 @@
+import 'package:Budgetary/shared/models/app_settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../../shared/models/user_details.dart';
 
 class AppSettingsProvider with ChangeNotifier {
-  UserDetails _ud = UserDetails(username: 'K', role: 'K');
-  Color _appColor = Colors.red.shade600;
+  AppSettings _appSettings = AppSettings(
+    appColor: Colors.red.value,
+    userDetails: UserDetails(role: 'K', username: 'K'),
+  );
 
-  final String _storageKey = 'UserDetails';
+  final String _storageKey = 'appSettings';
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   void updateUserData({username, role}) {
-    var newUD = _ud.copyWith(username: username, role: role);
-    _ud = newUD;
+    var newUD =
+        _appSettings.userDetails.copyWith(username: username, role: role);
+    _appSettings.userDetails = newUD;
 
     _saveState();
   }
@@ -23,36 +28,52 @@ class AppSettingsProvider with ChangeNotifier {
   }
 
   UserDetails getUserData() {
-    var d = _ud.toJson();
-    return UserDetails.fromJson(d);
+    var ud = _appSettings.userDetails.toJson();
+    return UserDetails.fromJson(ud);
+  }
+
+  void useWallpaperColor(val) {
+    _appSettings.useWallpaperColor = val;
+
+    _saveState();
   }
 
   void _loadDetailsFromStorage() {
     _prefs.then((pref) {
       var d = pref.getString(_storageKey);
       if (d != null) {
-        _ud = UserDetails.fromJson(json.decode(d));
+        _appSettings = AppSettings.fromJson(json.decode(d));
         notifyListeners();
       }
     });
   }
 
   void updateAppColor(Color color) {
-    _appColor = color;
+    _appSettings.appColor = color.value;
 
-    notifyListeners();
+    _saveState();
+  }
+
+  bool get useColorFromWallpaper {
+    return _appSettings.useWallpaperColor;
   }
 
   Color get appColor {
-    return _appColor;
+    return Color(_appSettings.appColor);
   }
 
   void _saveState() {
     _prefs.then((pref) {
-      var ud = json.encode(_ud);
-      pref.setString(_storageKey, ud);
+      var as = json.encode(_appSettings);
+      pref.setString(_storageKey, as);
     });
 
     notifyListeners();
+  }
+
+  void clearAppSettings() {
+    _prefs.then((pref) {
+      pref.remove(_storageKey);
+    });
   }
 }

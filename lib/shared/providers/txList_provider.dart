@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:Budgetary/shared/models/transaction_item.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
@@ -9,11 +10,11 @@ import '../models/selected_Transaction.dart';
 import '../models/transaction.dart';
 
 class TxListProvider with ChangeNotifier {
-  final List<Transaction> _expenses = [];
+  final List<Transaction> _transactions = [];
   final _currency = NumberFormat.currency(
       name: 'INR', symbol: '₹', locale: 'en-IN', decimalDigits: 0);
 
-  final String _key = 'txList';
+  final String _storageKey = 'txList';
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   TxListProvider() {
@@ -21,79 +22,83 @@ class TxListProvider with ChangeNotifier {
   }
 
   Transaction get getRecentTransactions {
-    if (_expenses.isNotEmpty)
-      return Transaction.clone(obj: _expenses[0]);
+    if (_transactions.isNotEmpty)
+      return Transaction.clone(obj: _transactions[0]);
     else
       return Transaction(period: DateTime.now(), txList: []);
   }
 
-  void onAddTransaction(tx) {
-    tx.id = _idGenerator();
-    var currentTime = DateTime.now();
+  void addTransaction(TransItem tx) {
+    tx.id = tx.id > 0 ? tx.id : _idGenerator();
+    var currentTime = tx.date;
 
-    if (_expenses.isEmpty ||
-        DateFormat('MMMM').format(_expenses[0].period) !=
+    if (_transactions.isEmpty ||
+        DateFormat('MMMM').format(_transactions[0].period) !=
             DateFormat('MMMM').format(currentTime)) {
       var exp = Transaction(
         txList: [],
         period: DateTime.now(),
       );
-      _expenses.insert(0, exp);
+      _transactions.insert(0, exp);
     }
 
-    _expenses[0].txList.insert(0, tx);
+    _transactions[0].txList.insert(0, tx);
     if (tx.isIncome) {
-      _expenses[0].balance += tx.amount;
-      _expenses[0].income += tx.amount;
+      _transactions[0].balance += tx.amount;
+      _transactions[0].income += tx.amount;
     } else {
       if (tx.paymentMode == 'CREDIT_CARD') {
-        _expenses[0].creditCardUsage += tx.amount;
+        _transactions[0].creditCardUsage += tx.amount;
       } else {
-        _expenses[0].balance -= tx.amount;
-        _expenses[0].spent += tx.amount;
+        _transactions[0].balance -= tx.amount;
+        _transactions[0].spent += tx.amount;
       }
     }
     _updateState();
   }
 
   void updateTransaction(selectedTransaction selectedTx) {
-    var oldAmount =
-        _expenses[selectedTx.mainIdx].txList[selectedTx.index].amount;
+    TransItem oldItem =
+        _transactions[selectedTx.mainIdx].txList.removeAt(selectedTx.index);
+    TransItem tx = selectedTx.txItem;
+    tx.id = oldItem.id;
 
-    if (selectedTx.txItem.amount !=
-        _expenses[selectedTx.mainIdx].txList[selectedTx.index].amount) {
-      var diffAmount = oldAmount - selectedTx.txItem.amount;
+    if (tx.isIncome) {
+      _transactions[selectedTx.mainIdx].balance -= oldItem.amount;
+      _transactions[selectedTx.mainIdx].income -= oldItem.amount;
 
-      if (selectedTx.txItem.isIncome) {
-        _expenses[0].balance += diffAmount;
-        _expenses[0].income += diffAmount;
+      _transactions[selectedTx.mainIdx].balance += tx.amount;
+      _transactions[selectedTx.mainIdx].income += tx.amount;
+    } else {
+      if (tx.paymentMode == 'CREDIT_CARD') {
+        _transactions[selectedTx.mainIdx].creditCardUsage += tx.amount;
+        _transactions[selectedTx.mainIdx].creditCardUsage -= oldItem.amount;
       } else {
-        if (selectedTx.txItem.paymentMode == 'CREDIT_CARD') {
-          _expenses[0].creditCardUsage += diffAmount;
-        } else {
-          _expenses[0].balance -= diffAmount;
-          _expenses[0].spent += diffAmount;
-        }
+        _transactions[selectedTx.mainIdx].balance -= tx.amount;
+        _transactions[selectedTx.mainIdx].spent += tx.amount;
+
+        _transactions[selectedTx.mainIdx].balance += oldItem.amount;
+        _transactions[selectedTx.mainIdx].spent -= oldItem.amount;
       }
     }
 
-    _expenses[selectedTx.mainIdx].txList[selectedTx.index] = selectedTx.txItem;
-
-    notifyListeners();
+    _transactions[selectedTx.mainIdx].txList.insert(selectedTx.index, tx);
+    print(_transactions[selectedTx.mainIdx]);
+    _updateState();
   }
 
   void deleteTransaction(selectedTransaction selectedTx) {
-    _expenses[selectedTx.mainIdx].txList.removeAt(selectedTx.index);
+    _transactions[selectedTx.mainIdx].txList.removeAt(selectedTx.index);
     var spentAmount = selectedTx.txItem.amount;
     if (selectedTx.txItem.isIncome) {
-      _expenses[selectedTx.mainIdx].income -= spentAmount;
-      _expenses[selectedTx.mainIdx].balance -= spentAmount;
+      _transactions[selectedTx.mainIdx].income -= spentAmount;
+      _transactions[selectedTx.mainIdx].balance -= spentAmount;
     } else {
       if (selectedTx.txItem.paymentMode == 'CREDIT_CARD') {
-        _expenses[0].creditCardUsage -= spentAmount;
+        _transactions[0].creditCardUsage -= spentAmount;
       } else {
-        _expenses[selectedTx.mainIdx].balance += spentAmount;
-        _expenses[selectedTx.mainIdx].spent -= spentAmount;
+        _transactions[selectedTx.mainIdx].balance += spentAmount;
+        _transactions[selectedTx.mainIdx].spent -= spentAmount;
       }
     }
 
@@ -110,12 +115,12 @@ class TxListProvider with ChangeNotifier {
   }
 
   Future _loadDataFromStorage() async {
-    await _prefs.then((prefs) => prefs.getString(_key)).then((val) {
+    await _prefs.then((prefs) => prefs.getString(_storageKey)).then((val) {
       if (val != null) {
         var data = json.decode(val) as List<dynamic>;
-        _expenses.removeRange(0, _expenses.length);
+        _transactions.removeRange(0, _transactions.length);
         data.forEach((d) {
-          _expenses.add(Transaction.fromJson(d));
+          _transactions.add(Transaction.fromJson(d));
         });
         notifyListeners();
       }
@@ -125,22 +130,13 @@ class TxListProvider with ChangeNotifier {
   Future _saveDataToStorage() async {
     await _prefs.then(
       (prefs) {
-        prefs.setString(_key, jsonEncode(_expenses));
-      },
-    );
-  }
-
-  Future clearStorage() async {
-    await _prefs.then(
-      (prefs) {
-        prefs.remove(_key);
-        _updateState();
+        prefs.setString(_storageKey, jsonEncode(_transactions));
       },
     );
   }
 
   List<Transaction> getTxnsHistory() {
-    var encoded = json.encode(_expenses);
+    var encoded = json.encode(_transactions);
     var decoded = json.decode(encoded) as List;
     List<Transaction> item = [];
     decoded.forEach((element) {
@@ -151,7 +147,14 @@ class TxListProvider with ChangeNotifier {
 
   void _updateState() {
     notifyListeners();
-
     _saveDataToStorage();
+  }
+
+  Future clearStorage() async {
+    await _prefs.then(
+      (prefs) {
+        prefs.remove(_storageKey);
+      },
+    );
   }
 }
