@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../shared/providers/txList_provider.dart';
 
 class OverviewBanner extends StatelessWidget {
-  OverviewBanner({super.key});
+  const OverviewBanner({super.key});
 
   double getPercentage({ctx, full = false}) {
     var txns =

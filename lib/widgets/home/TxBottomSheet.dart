@@ -1,13 +1,11 @@
 import 'package:Budgetary/shared/models/selected_Transaction.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../../shared/models/transaction_item.dart';
 
 class TxBottomSheet extends StatelessWidget {
   selectedTransaction selectedTx;
 
-  TxBottomSheet({required this.selectedTx});
+  TxBottomSheet({super.key, required this.selectedTx});
 
   @override
   Widget build(BuildContext context) {

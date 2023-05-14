@@ -11,11 +11,11 @@ class ExpansionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<bool> _isPanelOpen = [];
+    List<bool> isPanelOpen = [];
 
-    txnsList.forEach((element) {
-      _isPanelOpen.add(false);
-    });
+    for (var element in txnsList) {
+      isPanelOpen.add(false);
+    }
 
     var formatter = context.read<TxListProvider>().numToCurrency;
     var color = Theme.of(context).primaryColor;
@@ -58,7 +58,7 @@ class ExpansionList extends StatelessWidget {
               title: const Text('Income'),
               trailing: Text(
                 formatter(txnsList[index].income),
-                style: TextStyle(color: Colors.green, fontSize: 16),
+                style: const TextStyle(color: Colors.green, fontSize: 16),
               ),
             ),
             ListTile(
@@ -74,7 +74,7 @@ class ExpansionList extends StatelessWidget {
               title: const Text('Spent'),
               trailing: Text(
                 formatter(txnsList[index].spent),
-                style: TextStyle(color: Colors.red, fontSize: 16),
+                style: const TextStyle(color: Colors.red, fontSize: 16),
               ),
             ),
             ListTile(

@@ -22,10 +22,11 @@ class TxListProvider with ChangeNotifier {
   }
 
   Transaction get getRecentTransactions {
-    if (_transactions.isNotEmpty)
+    if (_transactions.isNotEmpty) {
       return Transaction.clone(obj: _transactions[0]);
-    else
+    } else {
       return Transaction(period: DateTime.now(), txList: []);
+    }
   }
 
   void addTransaction(TransItem tx) {
@@ -119,9 +120,9 @@ class TxListProvider with ChangeNotifier {
       if (val != null) {
         var data = json.decode(val) as List<dynamic>;
         _transactions.removeRange(0, _transactions.length);
-        data.forEach((d) {
+        for (var d in data) {
           _transactions.add(Transaction.fromJson(d));
-        });
+        }
         notifyListeners();
       }
     });
@@ -139,9 +140,9 @@ class TxListProvider with ChangeNotifier {
     var encoded = json.encode(_transactions);
     var decoded = json.decode(encoded) as List;
     List<Transaction> item = [];
-    decoded.forEach((element) {
+    for (var element in decoded) {
       item.add(Transaction.fromJson(element));
-    });
+    }
     return item;
   }
 

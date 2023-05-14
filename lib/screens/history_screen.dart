@@ -6,6 +6,8 @@ import '../widgets/history/expansion_list.dart';
 import '../shared/providers/txList_provider.dart';
 
 class HistoryScreen extends StatefulWidget {
+  const HistoryScreen({super.key});
+
   @override
   State<StatefulWidget> createState() => _HistoryScreenState();
 }

@@ -25,9 +25,9 @@ class Budgetary extends StatefulWidget {
 
 class BudgetaryState extends State<Budgetary> {
   final List<Widget> _pages = [
-    HomeScreen(),
-    HistoryScreen(),
-    SettingsScreen(),
+    const HomeScreen(),
+    const HistoryScreen(),
+    const SettingsScreen(),
   ];
 
   int _activeRouteIndex = 0;
@@ -43,10 +43,11 @@ class BudgetaryState extends State<Budgetary> {
     return DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
       late Color appColorSeed;
 
-      if (lightDynamic != null)
+      if (lightDynamic != null) {
         appColorSeed = lightDynamic.primary;
-      else
+      } else {
         appColorSeed = Colors.deepPurple.shade600;
+      }
 
       return MultiProvider(
         providers: [
@@ -96,6 +97,7 @@ class BudgetaryState extends State<Budgetary> {
                       },
                     );
                 }
+                return null;
               },
             )),
       );

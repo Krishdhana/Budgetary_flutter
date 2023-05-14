@@ -9,6 +9,8 @@ import '../widgets/expense/transactions.dart';
 import '../widgets/home/overview_banner.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -18,14 +20,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    UserDetails _ud = Provider.of<AppSettingsProvider>(context).getUserData();
+    UserDetails ud = Provider.of<AppSettingsProvider>(context).getUserData();
 
-    print('home redrawn');
     return Scaffold(
       body: Column(
         children: [
-          Greeting(_ud.username),
-          OverviewBanner(),
+          Greeting(ud.username),
+          const OverviewBanner(),
           NotificationListener<UserScrollNotification>(
             onNotification: (notification) {
               // if (notification.direction == ScrollDirection.reverse) {
@@ -40,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }
               return true;
             },
-            child: Transactions(),
+            child: const Transactions(),
           ),
         ],
       ),

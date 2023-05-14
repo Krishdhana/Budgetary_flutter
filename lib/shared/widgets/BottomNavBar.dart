@@ -4,7 +4,7 @@ class BottomNavBar extends StatelessWidget {
   final int _activePage;
   final Function _onChangePage;
 
-  BottomNavBar(this._activePage, this._onChangePage);
+  const BottomNavBar(this._activePage, this._onChangePage, {super.key});
 
   @override
   Widget build(BuildContext context) {

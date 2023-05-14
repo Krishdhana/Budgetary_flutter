@@ -7,6 +7,8 @@ import '../../shared/providers/txList_provider.dart';
 import 'txItemRenderer.dart';
 
 class Transactions extends StatefulWidget {
+  const Transactions({super.key});
+
   @override
   State<Transactions> createState() => _TransactionsState();
 }

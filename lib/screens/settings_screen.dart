@@ -1,4 +1,3 @@
-import 'package:Budgetary/shared/models/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -11,11 +10,14 @@ import '../widgets/profile/profile_edit_dialog.dart';
 import '../shared/providers/txList_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
   @override
   State<StatefulWidget> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  @override
   Widget build(BuildContext context) {
     Color color = Theme.of(context).primaryColor;
     late Color selectedColor;

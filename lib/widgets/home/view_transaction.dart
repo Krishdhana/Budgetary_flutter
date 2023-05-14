@@ -16,7 +16,7 @@ class ViewTransaction extends StatelessWidget {
 
     return AlertDialog(
       title: const Text('Expense Details'),
-      content: Container(
+      content: SizedBox(
         height: 150,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

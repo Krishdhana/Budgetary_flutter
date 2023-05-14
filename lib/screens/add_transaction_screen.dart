@@ -10,7 +10,7 @@ class AddTransactionScreen extends StatefulWidget {
   bool isEditMode;
   var selectedTx;
 
-  AddTransactionScreen({this.isEditMode = false, this.selectedTx = const {}});
+  AddTransactionScreen({super.key, this.isEditMode = false, this.selectedTx = const {}});
 }
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
